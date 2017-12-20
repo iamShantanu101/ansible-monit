@@ -1,0 +1,28 @@
+---
+- name: Get my public IP from ipify.org
+  ipify_facts:
+
+- name: mysql remote
+  debug: var=mysql_remote
+
+- name: Get variables value
+  debug: var=mmonit
+
+- name: Get public IP
+  debug: var=ipify_public_ip
+
+- name: Install monit
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - monit
+  tags:
+    - install_monit
+
+- name: Configure monit
+  template: src=monitrc.j2 dest=/etc/monit/monitrc
+  notify:
+    - restart monit
+  tags:
+    - configure_monit

@@ -1,0 +1,30 @@
+---
+monit_poll_period: 60
+monit_poll_start_delay: 0
+monit_logfile: "syslog facility log_daemon"
+
+# Monit
+monit_conf_main: "/etc/monit/monitrc"
+monit_port: 2812
+monit_username: 
+monit_password: 
+monit_eventqueue_enable: yes
+monit_eventqueue_directory: /var/monit
+monit_eventqueue_slots: 5000
+monit_ssl: no
+
+# E-mail
+monit_email_enable: no
+monit_mailserver_host:
+monit_mailserver_port:
+monit_notify_email:
+
+# Mmonit
+mmonit: true
+mmonit_user: 
+mmonit_pass: 
+mmonit_host: 
+mmonit_port: 
+
+# MySQL (remote)
+mysql_remote: true

@@ -1,0 +1,98 @@
+###############################################################################
+## Global section
+###############################################################################
+
+set daemon {{monit_poll_period}}
+{% if monit_poll_start_delay > 0 -%}
+  with start delay {{monit_poll_start_delay}}
+{% endif -%}
+
+set logfile {{monit_logfile}}
+
+{% if monit_email_enable -%}
+set mailserver {{monit_mailserver_host}}{% if monit_mailserver_port is defined %} port {{monit_mailserver_port}}{% endif %}
+
+{% if monit_mailserver_username is defined %}  username "{{monit_mailserver_username}}"{{'\n'}}{% endif %}
+{% if monit_mailserver_password is defined %}  password "{{monit_mailserver_password}}"{{'\n'}}{% endif %}
+{% if monit_mailserver_encryption is defined %}  using {{monit_mailserver_encryption}}{{'\n'}}{% endif %}
+{% if monit_mailserver_timeout is defined %}  with timeout {{monit_mailserver_timeout}} seconds{{'\n'}}{% endif %}
+
+{% if monit_eventqueue_enable -%}
+set eventqueue
+  basedir {{monit_eventqueue_directory}}
+  slots {{monit_eventqueue_slots | default('5000')}}
+{% endif -%}
+
+{% if monit_notify_email is string %}
+set alert {{monit_notify_email}} 
+{% else %}
+  {% for email in monit_notify_email %}
+    set alert {{email}} 
+  {% endfor %}
+{% endif %}
+{% endif -%}
+
+set httpd port {{monit_port}}
+	use address {{ipify_public_ip}}
+	allow {{monit_username}}:{{monit_password}}
+
+
+{% if mmonit is defined -%}
+set mmonit http://{{mmonit_user}}:{{mmonit_pass}}@{{mmonit_host}}:{{mmonit_port}}/collector
+{% endif -%}
+
+{% if monit_ssl %}  ssl enable
+  pemfile {{monit_cert}}
+{% endif %}
+
+
+###############################################################################
+## Services
+###############################################################################
+##
+## Check general system resources such as load average, cpu and memory
+## usage. Each test specifies a resource, conditions and the action to be
+## performed should a test fail.
+#
+#System Monitoring
+check system {{inventory_hostname}}
+        if memory usage > 80% for 2 cycles then alert
+        if cpu usage (user) > 70% for 2 cycles then alert
+        if cpu usage (system) > 30% then alert
+        if cpu usage (wait) > 20% then alert
+#        if loadavg (1min) > 6 for 2 cycles then alert
+	if loadavg (5min) > {{ansible_processor_vcpus}} for 2 cycles then alert
+check filesystem rootfs with path /
+       if space usage > 80% then alert
+
+{% if mysql_remote == 'false' %}
+check process mysqld with pidfile "/var/run/mysqld/mysqld.pid"				
+	if|safe cpu > 80% for 2 cycles then alert	
+{% endif %}
+
+#PHP-FPM
+check process php7.0-fpm with pidfile "/var/run/php/php7.0-fpm.pid"
+	if not exist then exec "/bin/bash -c 'systemctl restart php7.0-fpm'"
+        if cpu > 80% for 2 cycles then alert
+
+check process php5.6-fpm with pidfile "/var/run/php/php5.6-fpm.pid"
+	if not exist then exec "/bin/bash -c 'systemctl restart php5.6-fpm'"
+	start program = "/bin/systemctl start php5.6-fpm"
+  	stop program  = "/bin/systemctl stop php5.6-fpm"
+	if cpu > 80% for 2 cycles then alert
+
+#Nginx
+check process nginx with pidfile "/var/run/nginx.pid"
+	if not exist then exec "/bin/bash -c 'systemctl restart nginx'"
+	start program = "/bin/systemctl start nginx"
+  	stop program  = "/bin/systemctl stop nginx"
+        if cpu > 80% for 2 cycles then alert
+
+###############################################################################
+## Includes
+###############################################################################
+##
+## It is possible to include additional configuration parts from other files or
+## directories.
+#
+#   include /etc/monit/conf.d/*

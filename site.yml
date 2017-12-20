@@ -1,0 +1,16 @@
+---
+
+- hosts: all
+  gather_facts: False
+  user: root
+
+  tasks:
+  - name: install python 2
+    raw: test -e /usr/bin/python || (sudo apt -y update && sudo apt install -y python-minimal)
+
+- hosts: all
+  become: true
+  user: root
+
+  roles:
+    - monit
