@@ -20,7 +20,7 @@ Ansible role for installing and configuring monit on servers.
     └── main.yml
 ```
 
-# Configurable variables (necesary to set them before running trying out the role.)
+# Configurable variables (necesary to set them before trying out the role.)
 
 ```
 mmonit_user:
