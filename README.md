@@ -51,7 +51,7 @@ Examples:
 ansible-playbook -i hosts --tags "monit_installed,monit_ver" monit.yml
 ```
 
-Note: Tags monit_installed and monit_ver needs needs to ran together as both are dependent on each other
+Note: Tags `monit_installed` and `monit_ver` needs to ran together as both are dependent on each other
 
 ```
 ansible-playbook -i hosts --tags "monit_installed,monit_ver,install_monit" monit.yml
